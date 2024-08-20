@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 
 // Utils
@@ -15,7 +16,10 @@ import {
   Button,
 } from '@mui/material';
 
-const UncontrolledForm = ({ category }) => {
+const UncontrolledForm = ({ categories }) => {
+  // React router
+  const navigate = useNavigate();
+
   // React hook form
   const { handleSubmit, control, reset } = useForm({
     defaultValues: {
@@ -30,7 +34,7 @@ const UncontrolledForm = ({ category }) => {
   const onFormSubmitHandler = (userOptions) => {
     const processedUserOptions = {
       category:
-        userOptions?.category || generateRandomValue('category', category),
+        userOptions?.category || generateRandomValue('category', categories),
       difficulty: userOptions?.difficulty || generateRandomValue('difficulty'),
       type: userOptions?.type || generateRandomValue('type'),
       questionAmounts:
@@ -38,10 +42,13 @@ const UncontrolledForm = ({ category }) => {
         generateRandomValue('questionAmounts'),
     };
 
-    console.log(processedUserOptions);
-
     // Reset form
     reset();
+
+    // Navigate to question page with processed user options
+    navigate('/question', {
+      state: { from: 'Start Page', userOptions: processedUserOptions },
+    });
   };
 
   return (
@@ -66,8 +73,8 @@ const UncontrolledForm = ({ category }) => {
                   field.onChange(e);
                 }}
               >
-                {category.map((item) => (
-                  <MenuItem key={item.id} value={item.name}>
+                {categories.map((item) => (
+                  <MenuItem key={item.id} value={item.id}>
                     {item.name}
                   </MenuItem>
                 ))}
@@ -114,8 +121,8 @@ const UncontrolledForm = ({ category }) => {
                   field.onChange(e);
                 }}
               >
-                <MenuItem value={'multiple-choices'}>Multiple Choices</MenuItem>
-                <MenuItem value={'true-false'}>True / False</MenuItem>
+                <MenuItem value={'multiple'}>Multiple Choices</MenuItem>
+                <MenuItem value={'boolean'}>True / False</MenuItem>
               </Select>
             </FormControl>
           )}
@@ -160,6 +167,5 @@ const UncontrolledForm = ({ category }) => {
 export default UncontrolledForm;
 
 UncontrolledForm.propTypes = {
-  category: PropTypes.array,
-  onStartQuiz: PropTypes.func.isRequired,
+  categories: PropTypes.array,
 };

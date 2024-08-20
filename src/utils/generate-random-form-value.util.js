@@ -3,13 +3,13 @@ const generateRandomValue = (key, categoryResponse) => {
     case 'category':
       return categoryResponse[
         Math.floor(Math.random() * categoryResponse.length)
-      ].name;
+      ].id;
     case 'difficulty': {
       const difficulties = ['easy', 'medium', 'hard'];
       return difficulties[Math.floor(Math.random() * difficulties.length)];
     }
     case 'type': {
-      const types = ['multiple-choices', 'true-false'];
+      const types = ['multiple', 'boolean'];
       return types[Math.floor(Math.random() * types.length)];
     }
     case 'questionAmounts':

@@ -1,60 +1,85 @@
-import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import useAppReducer from '../../libs/app-reducer';
+
+// Constants
+import API_URL from '../../constants/api-url';
 
 // Components
+import Main from '../../components/main';
+import Header from '../../components/header';
 import UncontrolledForm from './components/uncontrolled-form';
 
 // MUI Components
-import { Box, CircularProgress } from '@mui/material';
+import { CircularProgress } from '@mui/material';
 
 const StartPage = () => {
-  // State hook
-  const [category, setCategory] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  // Reducer hook
+  const [state, dispatch] = useAppReducer();
 
   // Effect hook
+  // Fetch categories from API
   useEffect(() => {
-    // Fetch categories
+    const abortController = new AbortController();
+
     const fetchCategories = async () => {
-      setIsLoading(true); // Start loading
+      dispatch({ type: 'FETCH_CATEGORIES_INIT' });
+
       try {
-        const categoryResponse = await fetch(
-          'https://opentdb.com/api_category.php',
-        );
+        const response = await fetch(API_URL['base'], {
+          signal: abortController.signal,
+        });
 
-        const categoryData = await categoryResponse.json();
+        if (!response.ok)
+          throw new Error(
+            'Network response was not ok. Failed to fetch categories.',
+          );
 
-        setCategory(categoryData.trivia_categories);
+        const data = await response.json();
+
+        dispatch({
+          type: 'FETCH_CATEGORIES_SUCCESS',
+          payload: data.trivia_categories,
+        });
       } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setIsLoading(false); // End loading
+        if (error.name !== 'AbortError') {
+          dispatch({
+            type: 'FETCH_CATEGORIES_FAILURE',
+            payload: error.message,
+          });
+        }
       }
     };
 
     fetchCategories();
-  }, []);
+
+    // Clean-up function
+    return () => {
+      abortController.abort();
+    };
+  }, [dispatch]);
+
   return (
     <>
-      {isLoading ? (
-        <Box
-          width={550}
-          height={372}
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-        >
+      {state.status === 'loading' && (
+        <Main>
           <CircularProgress />
-        </Box>
-      ) : (
-        <UncontrolledForm category={category} />
+        </Main>
+      )}
+      {state.status === 'success' && (
+        <>
+          <Header title="Quiz App" />
+          <Main>
+            <UncontrolledForm categories={state.categories} />
+          </Main>
+        </>
+      )}
+      {state.status === 'error' && (
+        <Main>
+          <p>Error fetching data: {state.error}</p>
+        </Main>
       )}
     </>
   );
 };
 
 export default StartPage;
-
-StartPage.propTypes = {
-  onStartQuiz: PropTypes.func.isRequired,
-};

@@ -1,16 +1,14 @@
-import PropTypes from 'prop-types';
+import { Outlet } from 'react-router-dom';
 
 // Components
-import Header from '../../components/header';
 import { Box, Container } from '@mui/material';
 
-const MainLayout = ({ children, title }) => {
+const MainLayout = () => {
   return (
     <>
       <Container maxWidth="sm">
         <Box>
-          <Header title={title} />
-          <main>{children}</main>
+          <Outlet />
         </Box>
       </Container>
     </>
@@ -18,8 +16,3 @@ const MainLayout = ({ children, title }) => {
 };
 
 export default MainLayout;
-
-MainLayout.propTypes = {
-  children: PropTypes.node,
-  title: PropTypes.string.isRequired,
-};
