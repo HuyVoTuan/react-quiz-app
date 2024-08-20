@@ -1,9 +1,6 @@
 import { useEffect } from 'react';
 import useAppReducer from '../../libs/app-reducer';
 
-// Constants
-import API_URL from '../../constants/api-url';
-
 // Components
 import Main from '../../components/main';
 import Header from '../../components/header';
@@ -25,7 +22,7 @@ const StartPage = () => {
       dispatch({ type: 'FETCH_CATEGORIES_INIT' });
 
       try {
-        const response = await fetch(API_URL['base'], {
+        const response = await fetch(`${import.meta.env.VITE_BE_API}/api_category.php`, {
           signal: abortController.signal,
         });
 
