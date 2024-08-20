@@ -10,7 +10,6 @@ import AnswerButtons from './components/answer-buttons';
 import { CircularProgress, Button } from '@mui/material';
 
 // Constants
-import API_URL from '../../constants/api-url';
 import Header from '../../components/header';
 
 const QuestionPage = () => {
@@ -29,14 +28,10 @@ const QuestionPage = () => {
 
     const fetchQuestions = async () => {
       dispatch({ type: 'FETCH_QUESTIONS_INIT' });
+      const { category, difficulty, type, questionAmounts } = userOptions;
 
       try {
-        const API_URL_QUERY = API_URL['query']
-          .replace('{category}', userOptions.category)
-          .replace('{difficulty}', userOptions.difficulty)
-          .replace('{type}', userOptions.type)
-          .replace('{amount}', userOptions.questionAmounts);
-
+        const API_URL_QUERY = `${import.meta.env.VITE_BE_API}/api.php?amount=${questionAmounts}&category=${category}&difficulty=${difficulty}&type=${type}`;
         const response = await fetch(API_URL_QUERY, {
           signal: abortController.signal,
         });
