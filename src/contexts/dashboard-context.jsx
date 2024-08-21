@@ -4,10 +4,10 @@ import { createContext, useReducer } from 'react';
 // Reducer function
 const dashboardReducer = (state, action) => {
   switch (action.type) {
-    case 'SET_USER':
+    case 'SET_USER_LOG':
       return {
         ...state,
-        user: action.payload,
+        userLog: action.payload,
       };
 
     case 'SET_ANSWER_LOG':
@@ -26,7 +26,7 @@ export const DashboardContext = createContext();
 // Provider component
 export const DashboardProvider = ({ children }) => {
   const [state, dispatch] = useReducer(dashboardReducer, {
-    user: null,
+    userLog: null,
     answersLog: [],
   });
 

@@ -7,13 +7,14 @@ import DashboardTable from './components/dashboard-table';
 const Dashboard = () => {
   const { state } = useDashboard();
 
-  console.log(state);
-
   return (
     <>
       <Header title="Dashboard" />
-      <p>{state?.user && 'Huy'}</p>
-      <DashboardTable answersLog={state?.answersLog} />
+      <p>{state?.username && 'Huy'}</p>
+      <DashboardTable
+        username={state?.username}
+        answersLog={state?.answersLog}
+      />
     </>
   );
 };
