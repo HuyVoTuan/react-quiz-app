@@ -3,7 +3,7 @@ import { Link, Outlet } from 'react-router-dom';
 // Components
 import { Box, Container, AppBar, Toolbar, Typography } from '@mui/material';
 
-const MainLayout = () => {
+const MainLayout = ({ children }) => {
   return (
     <>
       <AppBar
@@ -22,7 +22,7 @@ const MainLayout = () => {
 
       <Container maxWidth="md">
         <Box>
-          <Outlet />
+          {children}
         </Box>
       </Container>
     </>

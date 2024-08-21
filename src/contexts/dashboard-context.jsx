@@ -29,7 +29,7 @@ export const DashboardProvider = ({ children }) => {
     userLog: null,
     answersLog: [],
   });
-
+  
   return (
     <DashboardContext.Provider value={{ state, dispatch }}>
       {children}
@@ -41,3 +41,5 @@ export const DashboardProvider = ({ children }) => {
 DashboardProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };
+
+

@@ -32,6 +32,66 @@ const createData = ({
   };
 };
 
+
+/*
+[
+  {
+    "username": "xxx",
+    "difficulty": "xxx",
+    "totalQuestions": "xxx",
+    "totalScores": "xxx",
+    "history": [
+      { 
+        id: 'xxx', 
+        question: 'xxx', 
+        answer: 'xxx',
+        isCorrect: 'xxx',
+        time: 'xxx'
+      }
+    ]
+  },
+  {
+    "username": "xxx",
+    "difficulty": "xxx",
+    "totalQuestions": "xxx",
+    "totalScores": "xxx",
+    "history": [
+      { 
+        id: 'xxx', 
+        question: 'xxx', 
+        answer: 'xxx',
+        isCorrect: 'xxx',
+        time: 'xxx'
+      }
+    ]
+  }
+]
+
+---- hash map ------
+users [
+  {
+    "username": "tony",
+    "difficulty": "xxx",
+    "totalQuestions": "xxx",
+    "totalScores": "xxx",
+  }
+]
+
+history = {
+  "tony": [
+    { 
+      id: 'xxx', 
+      question: 'xxx', 
+      answer: 'xxx',
+      isCorrect: 'xxx',
+      time: 'xxx'
+    }
+  ]
+}
+
+*/
+
+
 function DashboardTable({ answersLog }) {
   const rows = [
     createData({

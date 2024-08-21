@@ -7,18 +7,20 @@ import MainLayout from './layouts/main-layout';
 import ResultPage from './pages/result-page';
 import Dashboard from './pages/dashboard';
 import { DashboardProvider } from './contexts/dashboard-context';
+import { Login } from './pages/login';
+import GuestRoute from './components/guest-route';
+import AuthRoute from './components/auth-route';
 
 const App = () => {
   return (
     <DashboardProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<MainLayout />}>
-            <Route index element={<StartPage />} />
-            <Route path="/result" element={<ResultPage />} />
-            <Route path="/question" element={<QuestionPage />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-          </Route>
+          <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
+          <Route path="/" element={<AuthRoute><MainLayout><StartPage /></MainLayout></AuthRoute>} />
+          <Route path="/result" element={<AuthRoute><MainLayout><ResultPage /></MainLayout></AuthRoute>} />
+          <Route path="/question" element={<AuthRoute><MainLayout><QuestionPage /></MainLayout></AuthRoute>} />
+          <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
         </Routes>
       </BrowserRouter>
     </DashboardProvider>
