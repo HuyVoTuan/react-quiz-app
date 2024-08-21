@@ -1,12 +1,26 @@
-import { Outlet } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 
 // Components
-import { Box, Container } from '@mui/material';
+import { Box, Container, AppBar, Toolbar, Typography } from '@mui/material';
 
 const MainLayout = () => {
   return (
     <>
-      <Container maxWidth="sm">
+      <AppBar
+        position="static"
+        sx={{
+          marginBottom: '2rem',
+        }}
+      >
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            <Link to="/">Quiz App</Link>
+          </Typography>
+          <Link to="/dashboard">Dashboard</Link>
+        </Toolbar>
+      </AppBar>
+
+      <Container maxWidth="md">
         <Box>
           <Outlet />
         </Box>

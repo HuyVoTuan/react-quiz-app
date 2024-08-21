@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import useAppReducer from '../../libs/app-reducer';
+import useStartPageReducer from './hooks/start-page-hook';
 
 // Components
 import Main from '../../components/main';
@@ -11,7 +11,7 @@ import { CircularProgress } from '@mui/material';
 
 const StartPage = () => {
   // Reducer hook
-  const [state, dispatch] = useAppReducer();
+  const [state, dispatch] = useStartPageReducer();
 
   // Effect hook
   // Fetch categories from API
@@ -19,12 +19,15 @@ const StartPage = () => {
     const abortController = new AbortController();
 
     const fetchCategories = async () => {
-      dispatch({ type: 'FETCH_CATEGORIES_INIT' });
+      dispatch({ type: 'FETCH_CATEGORIES', status: 'init' });
 
       try {
-        const response = await fetch(`${import.meta.env.VITE_BE_API}/api_category.php`, {
-          signal: abortController.signal,
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_BE_API}/api_category.php`,
+          {
+            signal: abortController.signal,
+          },
+        );
 
         if (!response.ok)
           throw new Error(
@@ -34,13 +37,15 @@ const StartPage = () => {
         const data = await response.json();
 
         dispatch({
-          type: 'FETCH_CATEGORIES_SUCCESS',
+          type: 'FETCH_CATEGORIES',
+          status: 'success',
           payload: data.trivia_categories,
         });
       } catch (error) {
         if (error.name !== 'AbortError') {
           dispatch({
-            type: 'FETCH_CATEGORIES_FAILURE',
+            type: 'FETCH_CATEGORIES',
+            status: 'failure',
             payload: error.message,
           });
         }
@@ -57,22 +62,22 @@ const StartPage = () => {
 
   return (
     <>
-      {state.status === 'loading' && (
+      {state?.status === 'loading' && (
         <Main>
           <CircularProgress />
         </Main>
       )}
-      {state.status === 'success' && (
+      {state?.status === 'success' && (
         <>
-          <Header title="Quiz App" />
+          <Header title="Start The Quiz" />
           <Main>
-            <UncontrolledForm categories={state.categories} />
+            <UncontrolledForm categories={state?.categories} />
           </Main>
         </>
       )}
-      {state.status === 'error' && (
+      {state?.status === 'error' && (
         <Main>
-          <p>Error fetching data: {state.error}</p>
+          <p>Error fetching data: {state?.error}</p>
         </Main>
       )}
     </>

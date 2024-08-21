@@ -1,5 +1,5 @@
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "https://jazzy-malasada-7833c5.netlify.app"
   status = 200
   force = false

@@ -1,16 +1,14 @@
-import { useEffect } from 'react';
-import useAppReducer from '../../libs/app-reducer';
+import { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import useQuestionPageReducer from './hooks/question-page-hook';
 
 // Components
 import Main from '../../components/main';
+import Header from '../../components/header';
 import AnswerButtons from './components/answer-buttons';
 
 // MUI Components
 import { CircularProgress, Button } from '@mui/material';
-
-// Constants
-import Header from '../../components/header';
 
 const QuestionPage = () => {
   // React router
@@ -19,7 +17,24 @@ const QuestionPage = () => {
   const { userOptions } = location.state || {};
 
   // Reducer hook
-  const [state, dispatch] = useAppReducer();
+  const [state, dispatch] = useQuestionPageReducer();
+
+  // Derive state
+  // Combine correct and incorrect answers
+  const combinedAnswers =
+    state?.status === 'success'
+      ? [
+          ...state.questions[state?.questionIndex].incorrect_answers,
+          state.questions[state?.questionIndex].correct_answer,
+        ]
+      : [];
+
+  // Function handlers
+  const shuffleAnswersHandler = useCallback((answers) => {
+    const shuffledAnswers = [...answers];
+    shuffledAnswers.sort(() => Math.random() - 0.5);
+    return shuffledAnswers;
+  }, []);
 
   // Effect hook
   // Fetch questions from API
@@ -27,11 +42,10 @@ const QuestionPage = () => {
     const abortController = new AbortController();
 
     const fetchQuestions = async () => {
-      dispatch({ type: 'FETCH_QUESTIONS_INIT' });
-      const { category, difficulty, type, questionAmounts } = userOptions;
+      dispatch({ type: 'FETCH_QUESTIONS', status: 'init' });
 
       try {
-        const API_URL_QUERY = `${import.meta.env.VITE_BE_API}/api.php?amount=${questionAmounts}&category=${category}&difficulty=${difficulty}&type=${type}`;
+        const API_URL_QUERY = `${import.meta.env.VITE_BE_API}/api.php?amount=${userOptions?.questionAmounts}&category=${userOptions?.category}&difficulty=${userOptions?.difficulty}&type=${userOptions?.type}`;
         const response = await fetch(API_URL_QUERY, {
           signal: abortController.signal,
         });
@@ -44,12 +58,17 @@ const QuestionPage = () => {
         const data = await response.json();
 
         dispatch({
-          type: 'FETCH_QUESTIONS_SUCCESS',
+          type: 'FETCH_QUESTIONS',
+          status: 'success',
           payload: data.results || [],
         });
       } catch (error) {
         if (error.name !== 'AbortError') {
-          dispatch({ type: 'FETCH_QUESTIONS_FAILURE', payload: error.message });
+          dispatch({
+            type: 'FETCH_QUESTIONS',
+            status: 'error',
+            payload: error.message,
+          });
         }
       }
     };
@@ -64,51 +83,48 @@ const QuestionPage = () => {
 
   // Handle navigation based on state
   useEffect(() => {
-    if (state.status === 'done') {
+    if (state?.status === 'done') {
       navigate('/result', {
-        state: { from: 'Question Page', points: state.points },
+        state: { from: 'Question Page', points: state?.points },
       });
     }
-  }, [state.status, navigate, state.points]);
+  }, [state, navigate]);
 
-  // Derive state
-  // Combine correct and incorrect answers
-  const combinedAnswers =
-    state.status === 'success'
-      ? [
-          ...state.questions[state.questionIndex].incorrect_answers,
-          state.questions[state.questionIndex].correct_answer,
-        ]
-      : [];
+  // Redirect to home if state is null
+  useEffect(() => {
+    if (!state) {
+      navigate('/');
+    }
+  }, [state, navigate]);
 
   return (
     <>
-      {state.status === 'loading' && (
+      {state?.status === 'loading' && (
         <Main>
           <CircularProgress />
         </Main>
       )}
-      {state.status === 'success' && (
+      {state?.status === 'success' && (
         <>
-          <Header title={`Question ${state.questionIndex + 1}`} />
+          <Header title={`Question ${state?.questionIndex + 1}`} />
           <Main>
             <h1
               dangerouslySetInnerHTML={{
-                __html: state.questions[state.questionIndex].question,
+                __html: state?.questions[state?.questionIndex].question,
               }}
             />
             <AnswerButtons
-              answers={combinedAnswers}
-              difficulty={userOptions.difficulty}
               state={state}
               dispatch={dispatch}
+              difficulty={userOptions?.difficulty}
+              answers={shuffleAnswersHandler(combinedAnswers)}
             />
           </Main>
         </>
       )}
-      {state.status === 'error' && (
+      {(state?.status === 'error' || !state) && (
         <Main>
-          <p>Error fetching data: {state.error}</p>
+          <p>Error fetching data: {state?.error}</p>
           <Button
             variant="outlined"
             sx={{
