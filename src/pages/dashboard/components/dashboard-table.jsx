@@ -1,5 +1,4 @@
 import PropTypes from 'prop-types';
-import { v4 as uuidv4 } from 'uuid';
 
 // MUI Components
 import {
@@ -15,99 +14,37 @@ import {
 // Components
 import DashboardTableRow from './dashboard-table-row';
 
-const createData = ({
-  id,
-  username,
-  difficulty,
-  totalQuestions,
-  totalScores,
-}) => {
-  return {
-    id,
-    username,
-    difficulty,
-    totalQuestions,
-    totalScores,
-    history: [],
-  };
-};
-
-
-/*
-[
-  {
-    "username": "xxx",
-    "difficulty": "xxx",
-    "totalQuestions": "xxx",
-    "totalScores": "xxx",
-    "history": [
-      { 
-        id: 'xxx', 
-        question: 'xxx', 
-        answer: 'xxx',
-        isCorrect: 'xxx',
-        time: 'xxx'
-      }
-    ]
-  },
-  {
-    "username": "xxx",
-    "difficulty": "xxx",
-    "totalQuestions": "xxx",
-    "totalScores": "xxx",
-    "history": [
-      { 
-        id: 'xxx', 
-        question: 'xxx', 
-        answer: 'xxx',
-        isCorrect: 'xxx',
-        time: 'xxx'
-      }
-    ]
-  }
-]
-
----- hash map ------
-users [
-  {
-    "username": "tony",
-    "difficulty": "xxx",
-    "totalQuestions": "xxx",
-    "totalScores": "xxx",
-  }
-]
-
-history = {
-  "tony": [
-    { 
-      id: 'xxx', 
-      question: 'xxx', 
-      answer: 'xxx',
-      isCorrect: 'xxx',
-      time: 'xxx'
-    }
-  ]
-}
-
-*/
-
-
-function DashboardTable({ answersLog }) {
-  const rows = [
-    createData({
-      id: uuidv4(),
-      username: 'Mock User',
-      difficulty: 'Mock Difficulty',
-      totalQuestions: 0,
-      totalScores: 0,
-    }),
-  ].map((row) => ({
-    ...row,
-    history: answersLog.map((log) => ({
-      id: uuidv4(),
-      ...log,
+const createRows = (sourceUsers, sourceQuizHistoryDetails) => {
+  return sourceUsers.map((user) => ({
+    id: user.id,
+    username: user.username,
+    totalQuizzes: user.quizHistories.length,
+    totalOverallScores: user.quizHistories.reduce((totalAcc, historyId) => {
+      const currentHistory = sourceQuizHistoryDetails[historyId];
+      const totalScores = currentHistory.entries.reduce(
+        (acc, entry) => (entry.isCorrect ? acc + 1 : acc),
+        0,
+      );
+      return totalAcc + totalScores;
+    }, 0),
+    histories: user.quizHistories.map((historyId) => ({
+      ...sourceQuizHistoryDetails[historyId],
+      id: historyId,
+      totalScores: sourceQuizHistoryDetails[historyId].entries.reduce(
+        (acc, entry) => {
+          return entry.isCorrect ? acc + 1 : acc;
+        },
+        0,
+      ),
+      totalQuestions: sourceQuizHistoryDetails[historyId].entries.length,
     })),
   }));
+};
+
+const DashboardTable = ({ sourceUsers, sourceQuizHistoryDetails }) => {
+  const sortedRows = createRows(sourceUsers, sourceQuizHistoryDetails).sort(
+    (a, b) => b.totalOverallScores - a.totalOverallScores,
+  );
 
   return (
     <TableContainer component={Paper}>
@@ -115,32 +52,51 @@ function DashboardTable({ answersLog }) {
         <TableHead>
           <TableRow>
             <TableCell />
-            <TableCell>Username</TableCell>
-            <TableCell align="right">Difficulty</TableCell>
-            <TableCell align="right">Total Questions</TableCell>
-            <TableCell align="right">Total Scores</TableCell>
+            <TableCell sx={{ fontWeight: 'bold' }} align="right">
+              Username
+            </TableCell>
+            <TableCell sx={{ fontWeight: 'bold' }} align="right">
+              Total Quizzes
+            </TableCell>
+            <TableCell sx={{ fontWeight: 'bold' }} align="right">
+              Overall Scores
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row) => (
-            <DashboardTableRow key={row.id} row={row} />
+          {sortedRows.map((row, index) => (
+            <DashboardTableRow key={row.id} row={row} index={index} />
           ))}
         </TableBody>
       </Table>
     </TableContainer>
   );
-}
+};
 
 export default DashboardTable;
 
 DashboardTable.propTypes = {
-  username: PropTypes.string,
-  answersLog: PropTypes.arrayOf(
+  sourceUsers: PropTypes.arrayOf(
     PropTypes.shape({
-      question: PropTypes.string.isRequired,
-      answer: PropTypes.string.isRequired,
-      isCorrect: PropTypes.bool.isRequired,
-      time: PropTypes.number.isRequired,
+      id: PropTypes.string.isRequired,
+      username: PropTypes.string.isRequired,
+      quizHistories: PropTypes.arrayOf(PropTypes.string).isRequired,
+    }),
+  ).isRequired,
+  sourceQuizHistoryDetails: PropTypes.objectOf(
+    PropTypes.shape({
+      startDate: PropTypes.string.isRequired,
+      difficulty: PropTypes.string.isRequired,
+      entries: PropTypes.arrayOf(
+        PropTypes.shape({
+          id: PropTypes.string,
+          question: PropTypes.string.isRequired,
+          correctAnswer: PropTypes.string.isRequired,
+          userAnswer: PropTypes.string.isRequired,
+          isCorrect: PropTypes.bool.isRequired,
+          time: PropTypes.string.isRequired,
+        }),
+      ).isRequired,
     }),
   ).isRequired,
 };

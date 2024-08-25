@@ -1,32 +1,21 @@
-import { useLocation, useNavigate } from 'react-router-dom';
-
-// MUI Components
-import { Button } from '@mui/material';
+import { useLocation } from 'react-router-dom';
 
 // Components
 import Main from '../../components/main';
 import Header from '../../components/header';
+import BaseButton from '../../components/base-button';
 
 const ResultPage = () => {
   // React router
   const location = useLocation();
-  const navigate = useNavigate();
-  const { points } = location.state || {};
+  const { finalScores } = location.state || {};
 
   return (
     <>
       <Header title={`Result`} />
       <Main>
-        <h1 className="text-4xl font-bold">Final Score: {points}</h1>
-        <Button
-          variant="outlined"
-          sx={{
-            marginTop: '1rem',
-          }}
-          onClick={() => navigate('/')}
-        >
-          Back to home
-        </Button>
+        <h1 className="mb-2 text-4xl font-bold">Final Score: {finalScores}</h1>
+        <BaseButton text="Go to dashboard" naviagateDestination="/dashboard" />
       </Main>
     </>
   );

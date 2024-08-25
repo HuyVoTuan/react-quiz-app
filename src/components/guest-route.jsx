@@ -1,18 +1,18 @@
-import React from 'react'
+import PropTypes from 'prop-types';
 import { Navigate } from 'react-router-dom';
 
 function GuestRoute({ children }) {
-  const accessToken = window.localStorage.getItem('access_token');
+  const accessToken = window.localStorage.getItem('user_id');
 
-  if(accessToken) {
-    return <Navigate to="/" />
+  if (accessToken) {
+    return <Navigate to="/" />;
   }
 
-  return (
-    <>
-      {children}
-    </>
-  )
+  return <>{children}</>;
 }
 
-export default GuestRoute
+export default GuestRoute;
+
+GuestRoute.propTypes = {
+  children: PropTypes.node.isRequired,
+};

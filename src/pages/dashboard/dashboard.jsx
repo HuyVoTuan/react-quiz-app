@@ -1,4 +1,4 @@
-import { useDashboard } from '../../contexts/use-dashboard-context';
+import { useDashboard } from '../../contexts/dashboard-context';
 
 // Components
 import Header from '../../components/header';
@@ -10,10 +10,9 @@ const Dashboard = () => {
   return (
     <>
       <Header title="Dashboard" />
-      <p>{state?.username && 'Huy'}</p>
       <DashboardTable
-        username={state?.username}
-        answersLog={state?.answersLog}
+        sourceUsers={state.users}
+        sourceQuizHistoryDetails={state.quizHistoryDetails}
       />
     </>
   );

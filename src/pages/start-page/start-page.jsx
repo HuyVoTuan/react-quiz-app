@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import useStartPageReducer from './hooks/start-page-hook';
+import useStartPage from '../../hooks/useStartPage';
 
 // Components
 import Main from '../../components/main';
@@ -10,16 +10,13 @@ import UncontrolledForm from './components/uncontrolled-form';
 import { CircularProgress } from '@mui/material';
 
 const StartPage = () => {
-  // Reducer hook
-  const [state, dispatch] = useStartPageReducer();
+  const [state, dispatch] = useStartPage();
 
-  // Effect hook
-  // Fetch categories from API
   useEffect(() => {
     const abortController = new AbortController();
 
     const fetchCategories = async () => {
-      dispatch({ type: 'FETCH_CATEGORIES', status: 'init' });
+      dispatch({ type: 'categories/fetch', status: 'init' });
 
       try {
         const response = await fetch(
@@ -37,14 +34,14 @@ const StartPage = () => {
         const data = await response.json();
 
         dispatch({
-          type: 'FETCH_CATEGORIES',
+          type: 'categories/fetch',
           status: 'success',
           payload: data.trivia_categories,
         });
       } catch (error) {
         if (error.name !== 'AbortError') {
           dispatch({
-            type: 'FETCH_CATEGORIES',
+            type: 'categories/fetch',
             status: 'failure',
             payload: error.message,
           });

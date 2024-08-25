@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 
 // Utils
-import generateRandomValue from '../../../utils/generate-random-form-value.util';
+import generateRandomValue from '../../../utils/generateRandomFormValue.util';
 
 // MUI Components
 import {
@@ -13,24 +13,25 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Button,
 } from '@mui/material';
 
+// Component
+import BaseButton from '../../../components/base-button';
+
+const initialFormValues = {
+  category: '',
+  difficulty: '',
+  type: '',
+  questionAmounts: '',
+};
+
 const UncontrolledForm = ({ categories }) => {
-  // React router
   const navigate = useNavigate();
 
-  // React hook form
   const { handleSubmit, control, reset } = useForm({
-    defaultValues: {
-      category: '',
-      difficulty: '',
-      type: '',
-      questionAmounts: '',
-    },
+    defaultValues: initialFormValues,
   });
 
-  // Functions handler
   const onFormSubmitHandler = (userOptions) => {
     const processedUserOptions = {
       category:
@@ -42,8 +43,7 @@ const UncontrolledForm = ({ categories }) => {
         generateRandomValue('questionAmounts'),
     };
 
-    // Reset form
-    reset();
+    reset(initialFormValues);
 
     // Navigate to question page with processed user options
     navigate('/question', {
@@ -65,6 +65,7 @@ const UncontrolledForm = ({ categories }) => {
             <FormControl fullWidth margin="normal">
               <InputLabel id="category-select-label">Category</InputLabel>
               <Select
+                {...field}
                 labelId="category-select-label"
                 id="category-select"
                 value={field.value}
@@ -90,6 +91,7 @@ const UncontrolledForm = ({ categories }) => {
             <FormControl fullWidth margin="normal">
               <InputLabel id="difficulty-select-label">Difficulty</InputLabel>
               <Select
+                {...field}
                 labelId="difficulty-select-label"
                 id="difficulty-select"
                 value={field.value}
@@ -113,6 +115,7 @@ const UncontrolledForm = ({ categories }) => {
             <FormControl fullWidth margin="normal">
               <InputLabel id="type-select-label">Type</InputLabel>
               <Select
+                {...field}
                 labelId="type-select-label"
                 id="type-select"
                 value={field.value}
@@ -133,6 +136,7 @@ const UncontrolledForm = ({ categories }) => {
           control={control}
           render={({ field }) => (
             <TextField
+              {...field}
               type="number"
               id="question-amounts"
               value={field.value}
@@ -143,6 +147,10 @@ const UncontrolledForm = ({ categories }) => {
               onChange={(e) => {
                 field.onChange(e);
               }}
+              error={field.value > 10}
+              helperText={
+                field.value > 10 ? 'Question Amounts must be at most 10' : ''
+              }
             />
           )}
         />
@@ -155,9 +163,7 @@ const UncontrolledForm = ({ categories }) => {
             marginTop: '1rem',
           }}
         >
-          <Button type="submit" variant="contained">
-            Get Started
-          </Button>
+          <BaseButton type="submit" variant="contained" text="Get Started" />
         </Box>
       </Box>
     </>
