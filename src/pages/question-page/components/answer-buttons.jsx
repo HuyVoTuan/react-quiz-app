@@ -1,16 +1,21 @@
 import PropTypes from 'prop-types';
 import { v4 as uuidv4 } from 'uuid';
 import styled from '@emotion/styled';
+import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState, useCallback } from 'react';
-import { useDashboard } from '../../../contexts/dashboard-context';
+import {
+  addHistory,
+  addUserHistory,
+  updateUserHistory,
+} from '../../../store/actions/dashboardActions';
 
 // Utils
 import timerFormatter from '../../../utils/timerFormatter.util';
 
 // MUI Components
 import Button from '@mui/material/Button';
+import { answerQuestion } from '../../../store/actions/questionsActions';
 
-// Styled Components
 const StyledAnswerButton = styled(Button)`
   margin: 0.5rem 0;
   width: 100%;
@@ -31,14 +36,12 @@ const createNewEntry = (question, correctAnswer, userAnswer, time) => ({
   time: time.toString(),
 });
 
-// React Component
-const AnswerButtons = ({
-  state: questionState,
-  dispatch: questionDispatch,
-  chosenDifficulty,
-  shuffledAnswers,
-}) => {
-  const { dispatch: dashboardDispatch } = useDashboard();
+const AnswerButtons = ({ chosenDifficulty, shuffledAnswers }) => {
+  const dispatch = useDispatch();
+  const { questions, questionIndex, finalScores } = useSelector(
+    (state) => state.questions,
+  );
+
   const [currentHistoryId, setCurrentHistoryId] = useState(null);
   const [timer, setTimer] = useState(ANSWER_TIMEOUTS[chosenDifficulty]);
 
@@ -46,8 +49,7 @@ const AnswerButtons = ({
 
   const handleAnswerClick = useCallback(
     (answer) => {
-      const questionData =
-        questionState?.questions[questionState?.questionIndex];
+      const questionData = questions[questionIndex];
 
       const newEntry = createNewEntry(
         questionData.question,
@@ -59,50 +61,34 @@ const AnswerButtons = ({
       if (!currentHistoryId) {
         const newHistoryId = uuidv4();
 
-        dashboardDispatch({
-          type: 'dashboard/addHistory',
-          payload: {
-            historyId: newHistoryId,
-            startDate: new Date().toLocaleString('en-US', {
+        dispatch(
+          addHistory(
+            newHistoryId,
+            new Date().toLocaleString('en-US', {
               timeZoneName: 'short',
             }),
-            difficulty: chosenDifficulty,
-            entries: [newEntry],
-          },
-        });
+            chosenDifficulty,
+            [newEntry],
+          ),
+        );
 
         setCurrentHistoryId(newHistoryId);
-
-        dashboardDispatch({
-          type: 'dashboard/addUserHistory',
-          payload: {
-            userId,
-            historyId: newHistoryId,
-          },
-        });
+        dispatch(addUserHistory(userId, newHistoryId));
       } else {
-        dashboardDispatch({
-          type: 'dashboard/updateUserHistory',
-          payload: {
-            historyId: currentHistoryId,
-            newEntry,
-          },
-        });
+        dispatch(updateUserHistory(currentHistoryId, newEntry));
       }
 
-      questionDispatch({ type: 'questions/answer', payload: answer });
-
-      // Reset the timer
+      dispatch(answerQuestion(answer));
       setTimer(ANSWER_TIMEOUTS[chosenDifficulty]);
     },
     [
-      questionState,
-      questionDispatch,
-      dashboardDispatch,
       userId,
-      timer,
+      dispatch,
+      questions,
+      questionIndex,
       chosenDifficulty,
       currentHistoryId,
+      timer,
     ],
   );
 
@@ -134,8 +120,7 @@ const AnswerButtons = ({
       ))}
       <div className="flex w-full items-center justify-between">
         <span>
-          Score: {questionState?.finalScores} /{' '}
-          {questionState?.questions.length}
+          Score: {finalScores} / {questions.length}
         </span>
         <span className={timer < 10 ? 'animate-pulse-fast text-red-600' : ''}>
           Timer: {timerFormatter(timer)}
@@ -146,12 +131,6 @@ const AnswerButtons = ({
 };
 
 AnswerButtons.propTypes = {
-  state: PropTypes.shape({
-    questions: PropTypes.array.isRequired,
-    questionIndex: PropTypes.number.isRequired,
-    finalScores: PropTypes.number.isRequired,
-  }).isRequired,
-  dispatch: PropTypes.func.isRequired,
   chosenDifficulty: PropTypes.string.isRequired,
   shuffledAnswers: PropTypes.arrayOf(PropTypes.string).isRequired,
 };

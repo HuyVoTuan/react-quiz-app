@@ -1,14 +1,17 @@
+import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
+import { ErrorBoundary } from 'react-error-boundary';
+import { resetQuestions } from '../../store/actions/questionsActions';
 
 // Components
 import Main from '../../components/main';
 import Header from '../../components/header';
 import BaseButton from '../../components/base-button';
+import ErrorPage from '../../pages/error';
 
 const ResultPage = () => {
-  // React router
   const location = useLocation();
-  const { finalScores } = location.state || {};
+  const { finalScores } = location.state;
 
   return (
     <>
@@ -21,4 +24,18 @@ const ResultPage = () => {
   );
 };
 
-export default ResultPage;
+const WrappedResultPageWithErrorBoundary = () => {
+  const dispatch = useDispatch();
+
+  return (
+    <ErrorBoundary
+      FallbackComponent={() => (
+        <ErrorPage onReset={() => dispatch(resetQuestions())} />
+      )}
+    >
+      <ResultPage />
+    </ErrorBoundary>
+  );
+};
+
+export default WrappedResultPageWithErrorBoundary;

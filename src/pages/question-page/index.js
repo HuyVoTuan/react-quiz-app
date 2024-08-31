@@ -1,2 +1,2 @@
-import QuestionPage from './question-page';
-export default QuestionPage;
+import WrappedQuestionPageWithErrorBoundary from './question-page';
+export default WrappedQuestionPageWithErrorBoundary;

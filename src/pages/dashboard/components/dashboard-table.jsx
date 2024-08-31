@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 
 // MUI Components
 import {
@@ -14,13 +14,13 @@ import {
 // Components
 import DashboardTableRow from './dashboard-table-row';
 
-const createRows = (sourceUsers, sourceQuizHistoryDetails) => {
-  return sourceUsers.map((user) => ({
+const createRows = (users, quizHistoryDetails) => {
+  return users.map((user) => ({
     id: user.id,
     username: user.username,
     totalQuizzes: user.quizHistories.length,
     totalOverallScores: user.quizHistories.reduce((totalAcc, historyId) => {
-      const currentHistory = sourceQuizHistoryDetails[historyId];
+      const currentHistory = quizHistoryDetails[historyId];
       const totalScores = currentHistory.entries.reduce(
         (acc, entry) => (entry.isCorrect ? acc + 1 : acc),
         0,
@@ -28,21 +28,23 @@ const createRows = (sourceUsers, sourceQuizHistoryDetails) => {
       return totalAcc + totalScores;
     }, 0),
     histories: user.quizHistories.map((historyId) => ({
-      ...sourceQuizHistoryDetails[historyId],
+      ...quizHistoryDetails[historyId],
       id: historyId,
-      totalScores: sourceQuizHistoryDetails[historyId].entries.reduce(
+      totalScores: quizHistoryDetails[historyId].entries.reduce(
         (acc, entry) => {
           return entry.isCorrect ? acc + 1 : acc;
         },
         0,
       ),
-      totalQuestions: sourceQuizHistoryDetails[historyId].entries.length,
+      totalQuestions: quizHistoryDetails[historyId].entries.length,
     })),
   }));
 };
 
-const DashboardTable = ({ sourceUsers, sourceQuizHistoryDetails }) => {
-  const sortedRows = createRows(sourceUsers, sourceQuizHistoryDetails).sort(
+const DashboardTable = () => {
+  const { users, quizHistoryDetails } = useSelector((state) => state.dashboard);
+
+  const sortedRows = createRows(users, quizHistoryDetails).sort(
     (a, b) => b.totalOverallScores - a.totalOverallScores,
   );
 
@@ -74,29 +76,3 @@ const DashboardTable = ({ sourceUsers, sourceQuizHistoryDetails }) => {
 };
 
 export default DashboardTable;
-
-DashboardTable.propTypes = {
-  sourceUsers: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      username: PropTypes.string.isRequired,
-      quizHistories: PropTypes.arrayOf(PropTypes.string).isRequired,
-    }),
-  ).isRequired,
-  sourceQuizHistoryDetails: PropTypes.objectOf(
-    PropTypes.shape({
-      startDate: PropTypes.string.isRequired,
-      difficulty: PropTypes.string.isRequired,
-      entries: PropTypes.arrayOf(
-        PropTypes.shape({
-          id: PropTypes.string,
-          question: PropTypes.string.isRequired,
-          correctAnswer: PropTypes.string.isRequired,
-          userAnswer: PropTypes.string.isRequired,
-          isCorrect: PropTypes.bool.isRequired,
-          time: PropTypes.string.isRequired,
-        }),
-      ).isRequired,
-    }),
-  ).isRequired,
-};

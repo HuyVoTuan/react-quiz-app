@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
-import { useDashboard } from '../../contexts/dashboard-context';
+import { useDispatch, useSelector } from 'react-redux';
+import { userLogin } from '../../store/actions/dashboardActions';
 
 // MUI Components
 import {
@@ -31,7 +32,9 @@ const initialFormValues = {
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { state, dispatch } = useDashboard();
+
+  const dispatch = useDispatch();
+  const { currentUser, error } = useSelector((state) => state.dashboard);
 
   const {
     handleSubmit,
@@ -43,33 +46,20 @@ const LoginPage = () => {
   });
 
   const onSubmitHandler = (data) => {
-    // Dispatch userLogin action
-    dispatch({
-      type: 'dashboard/userLogin',
-      payload: {
-        email: data.email,
-        password: data.password,
-      },
-    });
-
-    // Reset form
+    dispatch(userLogin(data));
     reset(initialFormValues);
   };
 
   useEffect(() => {
-    if (state.error) {
-      alert(state.error);
+    if (error) {
+      alert(error);
     }
 
-    if (state.currentUser) {
-      window.localStorage.setItem(
-        'user_id',
-        JSON.stringify(state.currentUser.id),
-      );
-
+    if (currentUser) {
+      window.localStorage.setItem('user_id', JSON.stringify(currentUser.id));
       navigate('/');
     }
-  }, [state, navigate]);
+  }, [currentUser, error, navigate]);
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -83,11 +73,15 @@ const LoginPage = () => {
             alignItems: 'center',
           }}
         >
+          <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+            <LockOutlinedIcon />
+          </Avatar>
           <InfoTooltip>
-            <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-              <LockOutlinedIcon />
-            </Avatar>
+            <Typography component="span" color={'#ADD8E6'} variant="span">
+              Hover me
+            </Typography>
           </InfoTooltip>
+
           <Typography component="h1" variant="h5">
             Sign in
           </Typography>

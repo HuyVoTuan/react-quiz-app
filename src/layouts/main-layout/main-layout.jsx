@@ -1,22 +1,21 @@
 import PropTypes from 'prop-types';
+import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDashboard } from '../../contexts/dashboard-context';
+import { userLogout } from '../../store/actions/dashboardActions';
 
 // Components
 import { Box, Container, AppBar, Toolbar, Typography } from '@mui/material';
 
 const MainLayout = ({ children }) => {
   const navigate = useNavigate();
-  const { dispatch } = useDashboard();
+  const dispatch = useDispatch();
 
   const onLogoutHandler = () => {
     // Clear user_id from localStorage
     window.localStorage.removeItem('user_id');
 
     // Dispatch userLogout action
-    dispatch({
-      type: 'dashboard/userLogout',
-    });
+    dispatch(userLogout());
 
     // Navigate to login page
     navigate('/login');

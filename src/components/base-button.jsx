@@ -11,6 +11,7 @@ const BaseButton = ({
   text = 'Button',
   type = 'button',
   variant = 'contained',
+  action = null,
   naviagateDestination = null,
 }) => {
   const navigate = useNavigate();
@@ -19,7 +20,15 @@ const BaseButton = ({
     <Button
       type={type}
       variant={variant}
-      onClick={() => navigate(naviagateDestination)}
+      onClick={() => {
+        if (action) {
+          action();
+        }
+
+        if (naviagateDestination) {
+          navigate(naviagateDestination);
+        }
+      }}
     >
       {text}
     </Button>
@@ -32,5 +41,6 @@ BaseButton.propTypes = {
   text: PropTypes.string,
   type: PropTypes.oneOf(validButtonTypes),
   variant: PropTypes.oneOf(validButtonVariants),
+  action: PropTypes.func,
   naviagateDestination: PropTypes.string,
 };

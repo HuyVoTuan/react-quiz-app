@@ -1,134 +1,109 @@
-import { useCallback, useEffect } from 'react';
-import useQuestionPage from '../../hooks/useQuestionPage';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
+import {
+  fetchQuestions,
+  resetQuestions,
+} from '../../store/actions/questionsActions';
+import { ErrorBoundary } from 'react-error-boundary';
 
 // Components
 import Main from '../../components/main';
 import Header from '../../components/header';
 import AnswerButtons from './components/answer-buttons';
+import ErrorPage from '../../pages/error';
 
 // MUI Components
-import { CircularProgress, Button } from '@mui/material';
+import { CircularProgress } from '@mui/material';
+import BaseButton from '../../components/base-button';
+
+const shuffleAnswersHandler = (answers) => {
+  const shuffledAnswers = [...answers];
+  shuffledAnswers.sort(() => Math.random() - 0.5);
+  return shuffledAnswers;
+};
 
 const QuestionPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { userOptions } = location.state || {};
+  const { userOptions } = location.state;
 
-  console.log(userOptions.difficulty);
-
-  const [state, dispatch] = useQuestionPage();
-
-  useEffect(() => {
-    const abortController = new AbortController();
-
-    const fetchQuestions = async () => {
-      dispatch({ type: 'questions/fetch', status: 'init' });
-
-      try {
-        const API_URL_QUERY = `${import.meta.env.VITE_BE_API}/api.php?amount=${userOptions?.questionAmounts}&category=${userOptions?.category}&difficulty=${userOptions?.difficulty}&type=${userOptions?.type}`;
-        const response = await fetch(API_URL_QUERY, {
-          signal: abortController.signal,
-        });
-
-        if (!response.ok)
-          throw new Error(
-            'Network response was not ok. Failed to fetch questions.',
-          );
-
-        const data = await response.json();
-
-        dispatch({
-          type: 'questions/fetch',
-          status: 'success',
-          payload: data.results || [],
-        });
-      } catch (error) {
-        if (error.name !== 'AbortError') {
-          dispatch({
-            type: 'questions/fetch',
-            status: 'error',
-            payload: error.message,
-          });
-        }
-      }
-    };
-
-    fetchQuestions();
-
-    // Clean-up function
-    return () => {
-      abortController.abort();
-    };
-  }, [dispatch, userOptions, navigate]);
+  const dispatch = useDispatch();
+  const { questions, questionIndex, finalScores, error, status } = useSelector(
+    (state) => state.questions,
+  );
 
   useEffect(() => {
-    if (!state || state?.status === 'error') {
-      navigate('/');
-    }
+    const controller = new AbortController();
+    const signal = controller.signal;
 
-    if (state?.status === 'done') {
+    dispatch(fetchQuestions({ signal, ...userOptions }));
+
+    return () => controller.abort();
+  }, [dispatch, userOptions]);
+
+  useEffect(() => {
+    if (status === 'done') {
+      dispatch(resetQuestions());
       navigate('/result', {
-        state: { from: 'Question Page', finalScores: state?.finalScores },
+        state: { finalScores: finalScores },
       });
     }
-  }, [state, navigate]);
+  }, [dispatch, navigate, questions, status, finalScores]);
 
   const combinedAnswers =
-    state?.status === 'success'
+    status === 'success'
       ? [
-          ...state.questions[state.questionIndex].incorrect_answers,
-          state.questions[state.questionIndex].correct_answer,
+          ...questions[questionIndex].incorrect_answers,
+          questions[questionIndex].correct_answer,
         ]
       : null;
 
-  const shuffleAnswersHandler = useCallback((answers) => {
-    const shuffledAnswers = [...answers];
-    shuffledAnswers.sort(() => Math.random() - 0.5);
-    return shuffledAnswers;
-  }, []);
-
   return (
     <>
-      {state?.status === 'loading' && (
+      {status === 'loading' && (
         <Main>
           <CircularProgress />
         </Main>
       )}
-      {state?.status === 'success' && combinedAnswers && (
+      {status === 'success' && combinedAnswers && (
         <>
-          <Header title={`Question ${state.questionIndex + 1}`} />
+          <Header title={`Question ${questionIndex + 1}`} />
           <Main>
             <h1
               dangerouslySetInnerHTML={{
-                __html: state.questions[state.questionIndex].question,
+                __html: questions[questionIndex].question,
               }}
             />
             <AnswerButtons
-              state={state}
-              dispatch={dispatch}
               chosenDifficulty={userOptions?.difficulty}
               shuffledAnswers={shuffleAnswersHandler(combinedAnswers)}
             />
           </Main>
         </>
       )}
-      {state?.status === 'error' && (
+      {status === 'error' && (
         <Main>
-          <p>Error fetching data: {state?.error || 'No state found.'}</p>
-          <Button
-            variant="outlined"
-            sx={{
-              marginTop: '1rem',
-            }}
-            onClick={() => navigate('/')}
-          >
-            Back to home
-          </Button>
+          <p>Error fetching data: {error || 'No state found.'}</p>
+          <BaseButton text="Back to home" naviagateDestination={'/'} />
         </Main>
       )}
     </>
   );
 };
 
-export default QuestionPage;
+const WrappedQuestionPageWithErrorBoundary = () => {
+  const dispatch = useDispatch();
+
+  return (
+    <ErrorBoundary
+      FallbackComponent={() => (
+        <ErrorPage onReset={() => dispatch(resetQuestions())} />
+      )}
+    >
+      <QuestionPage />
+    </ErrorBoundary>
+  );
+};
+
+export default WrappedQuestionPageWithErrorBoundary;

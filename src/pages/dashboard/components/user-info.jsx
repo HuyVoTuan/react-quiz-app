@@ -1,10 +1,10 @@
-import { useDashboard } from '../../../contexts/dashboard-context';
+import { useSelector } from 'react-redux';
 
 const UserInfo = () => {
-  const { state } = useDashboard();
+  const { users } = useSelector((state) => state.dashboard);
   const userId = window.localStorage.getItem('user_id');
 
-  const user = state.users.find((user) => user.id === JSON.parse(userId));
+  const user = users.find((user) => user.id === JSON.parse(userId));
 
   return (
     <div className="mb-4">

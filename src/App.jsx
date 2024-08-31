@@ -1,19 +1,20 @@
+import store from './store';
+import { Provider } from 'react-redux';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { DashboardProvider } from './contexts/dashboard-context';
 
 // Components
 import StartPage from './pages/start-page';
-import QuestionPage from './pages/question-page';
 import MainLayout from './layouts/main-layout';
-import ResultPage from './pages/result-page';
 import Dashboard from './pages/dashboard';
 import LoginPage from './pages/login';
 import GuestRoute from './components/guest-route';
 import AuthRoute from './components/auth-route';
+import WrappedResultPageWithErrorBoundary from './pages/result-page';
+import WrappedQuestionPageWithErrorBoundary from './pages/question-page';
 
 const App = () => {
   return (
-    <DashboardProvider>
+    <Provider store={store}>
       <BrowserRouter>
         <Routes>
           <Route
@@ -39,7 +40,7 @@ const App = () => {
             element={
               <AuthRoute>
                 <MainLayout>
-                  <ResultPage />
+                  <WrappedResultPageWithErrorBoundary />
                 </MainLayout>
               </AuthRoute>
             }
@@ -49,7 +50,7 @@ const App = () => {
             element={
               <AuthRoute>
                 <MainLayout>
-                  <QuestionPage />
+                  <WrappedQuestionPageWithErrorBoundary />
                 </MainLayout>
               </AuthRoute>
             }
@@ -64,7 +65,7 @@ const App = () => {
           />
         </Routes>
       </BrowserRouter>
-    </DashboardProvider>
+    </Provider>
   );
 };
 

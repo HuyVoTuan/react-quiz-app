@@ -45,9 +45,8 @@ const UncontrolledForm = ({ categories }) => {
 
     reset(initialFormValues);
 
-    // Navigate to question page with processed user options
     navigate('/question', {
-      state: { from: 'Start Page', userOptions: processedUserOptions },
+      state: { userOptions: processedUserOptions },
     });
   };
 
@@ -173,5 +172,5 @@ const UncontrolledForm = ({ categories }) => {
 export default UncontrolledForm;
 
 UncontrolledForm.propTypes = {
-  categories: PropTypes.array,
+  categories: PropTypes.array.isRequired,
 };

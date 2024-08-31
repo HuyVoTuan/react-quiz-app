@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import useStartPage from '../../hooks/useStartPage';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchCategories } from '../../store/actions/categoriesActions';
 
 // Components
 import Main from '../../components/main';
@@ -10,71 +11,38 @@ import UncontrolledForm from './components/uncontrolled-form';
 import { CircularProgress } from '@mui/material';
 
 const StartPage = () => {
-  const [state, dispatch] = useStartPage();
+  const dispatch = useDispatch();
+  const { categories, status, error } = useSelector(
+    (state) => state.categories,
+  );
 
   useEffect(() => {
-    const abortController = new AbortController();
+    const controller = new AbortController();
+    const signal = controller.signal;
 
-    const fetchCategories = async () => {
-      dispatch({ type: 'categories/fetch', status: 'init' });
+    dispatch(fetchCategories({ signal }));
 
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BE_API}/api_category.php`,
-          {
-            signal: abortController.signal,
-          },
-        );
-
-        if (!response.ok)
-          throw new Error(
-            'Network response was not ok. Failed to fetch categories.',
-          );
-
-        const data = await response.json();
-
-        dispatch({
-          type: 'categories/fetch',
-          status: 'success',
-          payload: data.trivia_categories,
-        });
-      } catch (error) {
-        if (error.name !== 'AbortError') {
-          dispatch({
-            type: 'categories/fetch',
-            status: 'failure',
-            payload: error.message,
-          });
-        }
-      }
-    };
-
-    fetchCategories();
-
-    // Clean-up function
-    return () => {
-      abortController.abort();
-    };
+    return () => controller.abort();
   }, [dispatch]);
 
   return (
     <>
-      {state?.status === 'loading' && (
+      <Header title="Start The Quiz" />
+      {status === 'loading' && (
         <Main>
           <CircularProgress />
         </Main>
       )}
-      {state?.status === 'success' && (
+      {status === 'success' && (
         <>
-          <Header title="Start The Quiz" />
           <Main>
-            <UncontrolledForm categories={state?.categories} />
+            <UncontrolledForm categories={categories} />
           </Main>
         </>
       )}
-      {state?.status === 'error' && (
+      {status === 'error' && (
         <Main>
-          <p>Error fetching data: {state?.error}</p>
+          <p>Error fetching data: {error}</p>
         </Main>
       )}
     </>
