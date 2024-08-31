@@ -1,6 +1,6 @@
 import store from './store';
 import { Provider } from 'react-redux';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 // Components
 import StartPage from './pages/start-page';
@@ -58,11 +58,14 @@ const App = () => {
           <Route
             path="/dashboard"
             element={
-              <MainLayout>
-                <Dashboard />
-              </MainLayout>
+              <AuthRoute>
+                <MainLayout>
+                  <Dashboard />
+                </MainLayout>
+              </AuthRoute>
             }
           />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </Provider>
